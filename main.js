@@ -23,6 +23,8 @@ import { tmpdir } from 'os'
 import { format } from 'util'
 import { makeWASocket, protoType, serialize } from './lib/simple.js'
 import { Low, JSONFile } from 'lowdb'
+import cloudDBAdapter from './lib/cloudDBAdapter.js'
+
 /* import {
   mongoDB,
   mongoDBV2
@@ -160,7 +162,7 @@ global.reloadHandler = async function (restatConn) {
   conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
   conn.onDelete = handler.deleteUpdate.bind(global.conn)
   conn.connectionUpdate = connectionUpdate.bind(global.conn)
-  conn.credsUpdate = saveCreds(global.conn)
+  conn.credsUpdate = saveCreds
 
   conn.ev.on('messages.upsert', conn.handler)
   conn.ev.on('group-participants.update', conn.participantsUpdate)
@@ -171,7 +173,7 @@ global.reloadHandler = async function (restatConn) {
   return true
 }
 
-const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
+const pluginFolder = global.__dirname(join(__dirname, './plugins'))
 const pluginFilter = filename => /\.js$/.test(filename)
 global.plugins = {}
 async function filesInit() {

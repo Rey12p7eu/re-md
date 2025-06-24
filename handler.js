@@ -91,7 +91,7 @@ export async function handler(chatUpdate) {
         if (opts['swonly'] && m.chat !== 'status@broadcast') return
         if (typeof m.text !== 'string') m.text = ''
         
-        const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
+        const isROwner = [this.decodeJid(global.conn.user.id), ...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
         const isOwner = isROwner || m.fromMe
         const isMods = isOwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
         const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
@@ -113,10 +113,10 @@ export async function handler(chatUpdate) {
         let usedPrefix
         let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
         
-        const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
+        const groupMetadata = (m.isGroup ? ((this.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
         const participants = (m.isGroup ? groupMetadata.participants : []) || []
-        const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {} // User Data
-        const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {} // Your Data
+        const user = (m.isGroup ? participants.find(u => this.decodeJid(u.id) === m.sender) : {}) || {} // User Data
+        const bot = (m.isGroup ? participants.find(u => this.decodeJid(u.id) == this.user.jid) : {}) || {} // Your Data
         const isRAdmin = user?.admin == 'superadmin' || false
         const isAdmin = isRAdmin || user?.admin == 'admin' || false // Is User Admin?
         const isBotAdmin = bot?.admin || false // Are you Admin?
@@ -138,7 +138,7 @@ export async function handler(chatUpdate) {
                     // if (typeof e === 'string') continue
                     console.error(e)
                     for (let [jid] of global.owner.filter(([number, _, isDeveloper]) => isDeveloper && number)) {
-                        let data = (await conn.onWhatsApp(jid))[0] || {}
+                        let data = (await this.onWhatsApp(jid))[0] || {}
                         if (data.exists) m.reply(`*Plugin:* ${name}\n*Sender:* wa.me/${m.sender.split`@`[0]}\n*Chat:* ${m.chat}\n*Command:* ${m.text}\n\n\`\`\`${format(e)}\`\`\``.trim(), data.jid)
                     }
                 }
@@ -152,7 +152,7 @@ export async function handler(chatUpdate) {
             }
             
             const str2Regex = str => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
-            let _prefix = plugin.customPrefix ? plugin.customPrefix : conn.prefix ? conn.prefix : global.prefix
+            let _prefix = plugin.customPrefix ? plugin.customPrefix : this.prefix ? this.prefix : global.prefix
             let match = (_prefix instanceof RegExp ? // RegExp Mode?
                 [[_prefix.exec(m.text), _prefix]] : Array.isArray(_prefix) ? // Array?
                     _prefix.map(p => {
@@ -285,7 +285,7 @@ export async function handler(chatUpdate) {
                         for (let key of Object.values(global.APIKeys)) text = text.replace(new RegExp(key, 'g'), '#HIDDEN#')
                         if (e.name) {
                             for (let [jid] of global.owner.filter(([number, _, isDeveloper]) => isDeveloper && number)) {
-                                let data = (await conn.onWhatsApp(jid))[0] || {}
+                                let data = (await this.onWhatsApp(jid))[0] || {}
                                 if (data.exists) m.reply(`*Plugin:* ${m.plugin}\n*Sender:* wa.me/${m.sender.split`@`[0]}\n*Chat:* ${m.chat}\n*Command:* ${usedPrefix}${command} ${args.join(' ')}\n\n\`\`\`${text}\`\`\``.trim(), data.jid)
                             }
                         }
@@ -364,15 +364,15 @@ export async function participantsUpdate({ id, participants, action }) {
          case 'add':
         case 'remove':
             if (chat.welcome) {
-                let groupMetadata = await this.groupMetadata(id) || (conn.chats[id] || {}).metadata
+                let groupMetadata = await this.groupMetadata(id) || (this.chats[id] || {}).metadata
                 for (let user of participants) {
                   let pp = 'https://telegra.ph/file/24fa902ead26340f3df2c.png'
             try {
-              pp = await( await conn.profilePictureUrl(user, 'image').catch(() => 'https://telegra.ph/file/24fa902ead26340f3df2c.png'))
+              pp = await( await this.profilePictureUrl(user, 'image').catch(() => 'https://telegra.ph/file/24fa902ead26340f3df2c.png'))
             } catch (e) {
             } finally {
-                        text = (action === 'add' ? (chat.sWelcome || this.welcome || conn.welcome || 'Welcome, @user!').replace('@subject', await this.getName(id)).replace('@desc', groupMetadata.desc?.toString() ||  '') :
-                            (chat.sBye || this.bye || conn.bye || 'Bye, @user!')).replace('@user', '@' + user.split('@')[0])
+                        text = (action === 'add' ? (chat.sWelcome || this.welcome || this.welcome || 'Welcome, @user!').replace('@subject', await this.getName(id)).replace('@desc', groupMetadata.desc?.toString() ||  '') :
+                            (chat.sBye || this.bye || this.bye || 'Bye, @user!')).replace('@user', '@' + user.split('@')[0])
                         //this.sendFile(id, pp, 'pp.jpg', text, null, false, { mentions: [user] })
 
                      
@@ -389,9 +389,9 @@ sourceUrl: 'https://www.instagram.com/p/Cch2IoGFomX/?utm_source=ig_web_copy_link
             }
         break
         case 'promote':
-            text = (chat.sPromote || this.spromote || conn.spromote || '@user ```is now Admin```')
+            text = (chat.sPromote || this.spromote || this.spromote || '@user ```is now Admin```')
         case 'demote':
-            if (!text) text = (chat.sDemote || this.sdemote || conn.sdemote || '@user ```is no longer Admin```')
+            if (!text) text = (chat.sDemote || this.sdemote || this.sdemote || '@user ```is no longer Admin```')
             text = text.replace('@user', '@' + participants[0].split('@')[0])
             if (chat.detect) this.sendMessage(id, { text, mentions: this.parseMention(text) })
         break
