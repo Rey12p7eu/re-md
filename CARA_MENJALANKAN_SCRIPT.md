@@ -150,8 +150,26 @@ npm install --legacy-peer-deps
 
 ### Error: Cannot find package '@james-bennett-295/writefile'
 ```bash
-# Package ini tidak tersedia, skip atau hapus dari dependencies
-# Bot masih bisa berjalan tanpa package ini
+# Package ini tidak tersedia, gunakan solusi berikut:
+# 1. Buat package.json minimal dengan dependencies penting saja
+# 2. Install dependencies secara bertahap
+# 3. Atau gunakan yarn sebagai alternatif
+
+# Solusi 1: Install dependencies penting dulu
+npm install yargs cfonts chalk @adiwajshing/baileys qrcode-terminal lowdb lodash ws --legacy-peer-deps
+
+# Solusi 2: Gunakan yarn
+npm install -g yarn
+yarn install
+```
+
+### Bot berhasil start tapi ada error dependencies
+```bash
+# Install dependencies yang hilang satu per satu
+npm install lodash ws syntax-error
+
+# Atau install semua dependencies dengan force
+npm install --force
 ```
 
 ### Bot tidak merespon
@@ -218,6 +236,30 @@ Jika mengalami masalah:
 2. **Jangan share session**: File session berisi data login WhatsApp Anda
 3. **Update berkala**: Selalu update bot untuk mendapat fitur dan perbaikan terbaru
 4. **Gunakan dengan bijak**: Jangan spam atau melanggar ToS WhatsApp
+
+## ✅ Testing Bot Functionality
+
+### 1. Verifikasi Bot Startup
+```bash
+# Jalankan bot dan periksa apakah muncul tampilan ASCII art
+node .
+
+# Jika berhasil, Anda akan melihat:
+# - ASCII art "Lightweight WhatsApp Bot"
+# - Pesan "re-md By @Rlxfly"
+# - QR code untuk scan
+```
+
+### 2. Test Basic Commands
+Setelah bot terhubung, test perintah dasar:
+- `.menu` - Menampilkan menu utama
+- `.ping` - Test response time
+- `.owner` - Info owner bot
+
+### 3. Verifikasi Fitur Utama
+- Sticker: Kirim gambar dengan caption `.s`
+- Download: `.ytmp3 [url]` untuk download audio YouTube
+- Info: `.botinfo` untuk informasi bot
 
 ## 🎉 Selamat!
 
